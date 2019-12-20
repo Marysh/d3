@@ -1,0 +1,75 @@
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 32px;
+}
+
+#power-gauge g.arc {
+    fill: steelblue;
+}
+
+#power-gauge g.pointer {
+    fill: #e85116;
+    stroke: #b64011;
+}
+
+#power-gauge g.label text {
+    text-anchor: middle;
+    font-size: 14px;
+    font-weight: bold;
+    fill: #666;
+}
+
+.gaugeChart-bezel-outer {
+    fill: none;
+    stroke: black;
+}
+
+.gaugeChart-bezel-inner {
+    fill: none;
+    stroke: #CCCCCC;
+}
+
+.gaugeChart-tick {
+    fill: none;
+    stroke: black;
+}
+
+.gaugeChart-face,
+.gaugeChart-tickHider {
+    stroke-width: 0;
+    fill: white;
+}
+
+.gaugeChart-needle {
+    stroke: #CD4120;
+    fill: #E57358;
+    opacity: 0.8;
+}
+
+.gaugeChart-needle-cap {
+    stroke: #666666;
+    fill: #4684EE;
+}
+
+svg {
+    display: block;
+    border: 1px solid #000;
+    width: 500px; height: 350px;
+    background-color: #0C2030;
+}
+.axis text {
+    font-size: 14px;
+    fill: #f1f1f1;
+}
+
+.axis .domain, .axis .tick line {
+    stroke-width: 2px;
+    stroke: #157FFB;
+}
+
+.label{
+    fill: #fff;
+    stroke: #f00;
+    stroke-width: 1px;
+    font-size: 24px;
+}
