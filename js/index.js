@@ -23,7 +23,7 @@ let gauge = function (container, configuration) {
     labelFormat: d3.format(',g'),
     labelInset: 10,
 
-    arcColorFn: d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
+    // arcColorFn: d3.interpolateHsl(d3.rgb('#e8e2ca'), d3.rgb('#3e6c0a'))
   };
   let range = undefined;
   let r = undefined;
@@ -60,8 +60,8 @@ let gauge = function (container, configuration) {
     pointerHeadLength = Math.round(r * config.pointerHeadLengthPercent);
 
     scale = d3.scaleLinear()
-      .range([0, 1])
-      .domain([config.minValue, config.maxValue]);
+      .domain([config.minValue, config.maxValue])
+      .range([0, 1]);
 
     ticks = scale.ticks(config.majorTicks);
     tickData = d3.range(config.majorTicks).map(function () {
@@ -70,15 +70,14 @@ let gauge = function (container, configuration) {
 
     arc = d3.arc()
       .innerRadius(r - config.ringWidth - config.ringInset)
-      .outerRadius(r - config.ringInset )
+      .outerRadius(r - config.ringInset - 30) // - 30 for height decreasing
       .startAngle(function (d, i) {
-        debugger
         let ratio = d * i;
-        return deg2rad(config.minAngle + (ratio * range));
+        return deg2rad(config.minAngle + (ratio * range) + 4);
       })
       .endAngle(function (d, i) {
         let ratio = d * (i + 1);
-        return deg2rad(config.minAngle + (ratio * range));
+        return deg2rad(config.minAngle + (ratio * range) - 4);
       });
   }
 
@@ -107,14 +106,26 @@ let gauge = function (container, configuration) {
       .attr('class', 'arc')
       .attr('transform', centerTx);
 
-    debugger;
     arcs.selectAll('path')
       .data(tickData)
       .enter().append('path')
-      .attr('fill', function (d, i) {
-        return config.arcColorFn(d * i);
+    // .attr('fill', function (d, i) {
+    //   return config.arcColorFn(d * i);
+    // })
+      .attr('fill', (lineData, index, lines) => {
+        const centerLineIndex = Math.ceil(lines.length / 2);
+        const firstQuarterLineIndex = (lines.length - centerLineIndex) / 2;
+        const lastQuarterLineIndex = lines.length - (lines.length - centerLineIndex) / 2 - 1;
+
+        if(index + 1 > centerLineIndex && index !== lines.length - 1 && index !== lastQuarterLineIndex) {
+          return 'tomato';
+        } else {
+          return '#ccc'
+        }
       })
-      .attr('d', arc);
+      .attr('d', (lineData, index, lines) => {
+        return arc(lineData, index, lines);
+      });
 
     // let lg = svg.append('g')
     //   .attr('class', 'label')
@@ -158,7 +169,8 @@ let gauge = function (container, configuration) {
     pointer.transition()
       .duration(config.transitionMs)
       // .ease('elastic')
-      .attr('transform', 'rotate(' + newAngle + ')');
+      .attr('transform', 'rotate(' + newAngle + ')')
+      .attr('fill', 'black');
   }
 
   that.update = update;
@@ -173,7 +185,7 @@ function onDocumentReady() {
     size: 300,
     clipWidth: 300,
     clipHeight: 300,
-    ringWidth: 60,
+    ringWidth: 50,
     maxValue: 10,
     transitionMs: 4000,
   });
@@ -198,7 +210,6 @@ if (!window.isLoaded) {
 } else {
   onDocumentReady();
 }
-
 
 const gaugeChart = (o) => {
   const chart = d3.select(o.el);
@@ -344,7 +355,6 @@ var r = 200,
 var svg = d3.select('body').append('svg')
   .attr('viewBox', -r * 0.9 + " " + -r * 1.11 + " " + r * 2 + " " + r * 2 * whRatio);
 var axis = d3.axisRadialInner(angleScale.copy().range(angleScale.range().map(d => deg2rad(d))), r).tickPadding(15);
-debugger;
 // 軸線
 svg.append('g').classed('axis', true)
   .call(axis);
@@ -355,7 +365,7 @@ var pointer = svg.append('g')
   .append('path')
   .attr('fill', 'red')
   .attr('d', ['M0 -1', 'L0.03 0', 'A 0.03 0.03 0 0 1 -0.03 0', 'Z'].join(' '))
-  .attr('transform', `rotate(${angleScale(0)})`)
+  .attr('transform', `rotate(${angleScale(0)})`);
 
 // 目前數值
 var label = svg.append('text')
