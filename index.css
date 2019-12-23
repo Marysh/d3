@@ -15,7 +15,6 @@ body {
 #power-gauge g.label text {
     text-anchor: middle;
     font-size: 14px;
-    font-weight: bold;
     fill: #666;
 }
 
@@ -53,9 +52,7 @@ body {
 
 svg {
     display: block;
-    border: 1px solid #000;
     width: 500px; height: 350px;
-    background-color: #0C2030;
 }
 .axis text {
     font-size: 14px;
@@ -69,7 +66,7 @@ svg {
 
 .label{
     fill: #fff;
-    stroke: #f00;
+    stroke: #000;
     stroke-width: 1px;
     font-size: 24px;
 }
