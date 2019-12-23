@@ -32,6 +32,11 @@ let gauge = function (container, configuration) {
 
   let svg = undefined;
   let arc = undefined;
+  let arcLong = undefined;
+  let arcStartEnd = undefined;
+  let arcEnd = undefined;
+  let arcFirstHalf = undefined;
+  let arcSecondHalf = undefined;
   let scale = undefined;
   let ticks = undefined;
   let tickData = undefined;
@@ -70,6 +75,18 @@ let gauge = function (container, configuration) {
 
     arc = d3.arc()
       .innerRadius(r - config.ringWidth - config.ringInset)
+      .outerRadius(r - config.ringInset - 25) // - 30 for height decreasing
+      .startAngle(function (d, i) {
+        let ratio = d * i;
+        return deg2rad(config.minAngle + (ratio * range) + 4);
+      })
+      .endAngle(function (d, i) {
+        let ratio = d * (i + 1);
+        return deg2rad(config.minAngle + (ratio * range) - 4);
+      });
+
+    arcLong = d3.arc()
+      .innerRadius(r - config.ringWidth - config.ringInset)
       .outerRadius(r - config.ringInset - 30) // - 30 for height decreasing
       .startAngle(function (d, i) {
         let ratio = d * i;
@@ -79,6 +96,43 @@ let gauge = function (container, configuration) {
         let ratio = d * (i + 1);
         return deg2rad(config.minAngle + (ratio * range) - 4);
       });
+
+    arcStartEnd = d3.arc()
+      .innerRadius(r - config.ringWidth - config.ringInset)
+      .outerRadius(r - config.ringInset - 25) // - 30 for height decreasing
+      .startAngle(function (d, i) {
+        let ratio = d * i;
+        return deg2rad(config.minAngle + (ratio * range));
+      })
+      .endAngle(function (d, i) {
+        let ratio = d * (i + 1);
+        return deg2rad(config.minAngle + (ratio * range) - 8);
+      });
+
+    arcEnd = d3.arc()
+      .innerRadius(r - config.ringWidth - config.ringInset)
+      .outerRadius(r - config.ringInset - 25) // - 30 for height decreasing
+      .startAngle(function (d, i) {
+        let ratio = d * i;
+        return deg2rad(config.minAngle + (ratio * range) + 8);
+      })
+      .endAngle(function (d, i) {
+        let ratio = d * (i + 1);
+        return deg2rad(config.minAngle + (ratio * range));
+      });
+
+    arcFirstHalf = d3.arc()
+      .innerRadius(r - config.ringWidth - config.ringInset)
+      .outerRadius(r - config.ringInset - 30) // - 30 for height decreasing
+      .startAngle(function (d, i) {
+        let ratio = d * i;
+        return deg2rad(config.minAngle + (ratio * range) + 4);
+      })
+      .endAngle(function (d, i) {
+        let ratio = d * (i + 1);
+        return deg2rad(config.minAngle + (ratio * range) - 4);
+      });
+
   }
 
   that.configure = configure;
@@ -124,7 +178,21 @@ let gauge = function (container, configuration) {
         }
       })
       .attr('d', (lineData, index, lines) => {
-        return arc(lineData, index, lines);
+        const centerLineIndex = Math.ceil(lines.length / 2) - 1;
+        const firstQuarterLineIndex = (lines.length - centerLineIndex - 1) / 2;
+        const lastQuarterLineIndex = lines.length - (lines.length - centerLineIndex - 1) / 2 - 1;
+        debugger;
+        if(index === centerLineIndex || index === firstQuarterLineIndex || index === lastQuarterLineIndex) {
+          return arc(lineData, index, lines);
+        } else if (index === 0) {
+          debugger;
+          return arcStartEnd(lineData, index, lines);
+        } else if (index === lines.length -1) {
+          debugger;
+          return arcEnd(lineData, index, lines);
+        } else {
+          return arcLong(lineData, index, lines);
+        }
       });
 
     // let lg = svg.append('g')
@@ -153,7 +221,16 @@ let gauge = function (container, configuration) {
 
     pointer = pg.append('path')
       .attr('d', pointerLine/*function(d) { return pointerLine(d) +'Z';}*/)
-      .attr('transform', 'rotate(' + config.minAngle + ')');
+      .attr('transform', 'rotate(' + config.minAngle + ')')
+      .attr('fill', '#ccc')
+      .attr('stroke-width', 0);
+
+    let circe = pg.append('circle')
+      .attr('cx', 1)
+      .attr('cy', 1)
+      .attr('r', 12)
+      .attr('fill', '#ccc')
+      .attr('stroke-width', 0);
 
     update(newValue === undefined ? 0 : newValue);
   }
@@ -169,8 +246,7 @@ let gauge = function (container, configuration) {
     pointer.transition()
       .duration(config.transitionMs)
       // .ease('elastic')
-      .attr('transform', 'rotate(' + newAngle + ')')
-      .attr('fill', 'black');
+      .attr('transform', 'rotate(' + newAngle + ')');
   }
 
   that.update = update;
